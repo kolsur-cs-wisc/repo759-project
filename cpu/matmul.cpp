@@ -12,7 +12,8 @@ void scaled_matmul_cpp(const float *m1, const float *m2, float *out,
       for (int k = 0; k < c1; k++) {
         val += m1[i * c1 + k] * m2[j + k * c2];
       }
-      out[i * c2 + j] = val * factor;
+      out[i * c2 + j] = val * factor;1
+      
     }
   }
 }
