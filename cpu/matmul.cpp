@@ -12,8 +12,22 @@ void scaled_matmul_cpp(const float *m1, const float *m2, float *out,
       for (int k = 0; k < c1; k++) {
         val += m1[i * c1 + k] * m2[j + k * c2];
       }
-      out[i * c2 + j] = val * factor;1
-      
+      out[i * c2 + j] = val * factor;
+    }
+  }
+}
+
+void scaled_matmul_transposed_cpp(const float *m1, const float *m2, float *out,
+                                  unsigned int r1, unsigned int r2,
+                                  unsigned int c1, float factor) {
+#pragma omp parallel for collapse(2)
+  for (int i = 0; i < r1; i++) {
+    for (int j = 0; j < r2; j++) {
+      float value = 0.0;
+      for (int k = 0; k < c1; k++) {
+        value += m1[i * c1 + k] * m2[j * c1 + k];
+      }
+      out[i * r2 + j] = value * factor;
     }
   }
 }

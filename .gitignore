@@ -1,0 +1,65 @@
+# Build artifacts
+*.o
+*.obj
+*.so
+*.a
+*.lib
+*.dll
+*.exe
+*.out
+*.log
+*.dSYM/
+*.pdb
+*.ilk
+
+# CMake build files
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+
+# Compiled Static Libraries
+*.lib
+*.a
+
+# Compiled Dynamic Libraries
+*.dll
+*.so
+*.dylib
+
+# Test binaries
+/tests/*.out
+/tests/*.exe
+
+# IDE specific files
+# CLion
+.idea/
+*.iml
+
+# Visual Studio
+.vscode/
+*.vcxproj*
+*.user
+*.sln
+*.suo
+*.VC.db
+*.VC.opendb
+
+# Xcode
+*.xcodeproj
+*.xcworkspace
+*.xcuserdata
+*.xcuserdatad
+*.mode1v3
+*.pbxuser
+project.xcworkspace/
+
+# Others
+*.swp
+*~ 
+*.bak
+*.tmp
+*.log
+
+*/outputs
+.DS_Store
