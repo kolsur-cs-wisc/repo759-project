@@ -1,48 +1,66 @@
-#include "attention.cu"
+// #include "attention.cu"
+#include "matmul.cuh"
+#include "softmax.cu"
 #include <iostream>
+#include <cuda.h>
 
 #define L 2
 #define D 2
 
 int main()
 {
-    const unsigned int B = 1;  // Batch size
+const unsigned int B = 1;  // Batch size
     const unsigned int T = 2;  // Sequence length
-    const unsigned int C = 2;  // Feature dimension
-    const unsigned int NH = 1; // Number of heads
+    const unsigned int C = 6;  // Feature dimension
+    const unsigned int NH = 2; // Number of heads
+    const float factor = 1.0f / sqrt(C);
 
-    // Host matrices
-    // float h_Q[L * D] = {1, 2, 3, 4, 5, 6};    // 2x3 matrix
-    // float h_K[L * D] = {7, 8, 9, 10, 11, 12}; // 2x3 matrix
-    // float h_V[L * D] = {1, 2, 3, 4, 5, 6};    // 2x3 matrix
-    float h_output[B * T * T * NH];
-
+    // Hardcoded input values for Q and K
+    // Shape: B x NH x T x C = 2 x 2 x 2 x 6
     float h_q[] = {
-        1.0f, 2.0f, // Q[0][0]
-        3.0f, 4.0f  // Q[0][1]
+        // Batch 0, Head 0
+        1, 2, 3, 7, 8, 9, 4, 5, 6, 10, 11, 12,
+        // Batch 0, Head 1
+        // 13, 14, 15, 19, 20, 21, 16, 17, 18, 22, 23, 24,
     };
 
     float h_k[] = {
-        5.0f, 6.0f, // K[0][0]
-        7.0f, 8.0f  // K[0][1]
+        // Batch 0, Head 0
+        1, 2, 3, 7, 8, 9, 4, 5, 6, 10, 11, 12,
+        // Batch 0, Head 1
+        // 13, 14, 15, 19, 20, 21, 16, 17, 18, 22, 23, 24,
     };
 
+    float h_v[] = {
+        // Batch 0, Head 0
+        1, 2, 3, 7, 8, 9, 4, 5, 6, 10, 11, 12,
+        // Batch 0, Head 1
+        // 13, 14, 15, 19, 20, 21, 16, 17, 18, 22, 23, 24,
+    };
+
+    float h_output1[B * T * T * NH];
+    float h_output2[B * T * C];
+
     // Device matrices
-    float *d_Q, *d_K, *d_V, *d_output;
+    float *d_Q, *d_K, *d_V, *d_output, *d_final;
     cudaMalloc(&d_Q, B * T * C * sizeof(float));
     cudaMalloc(&d_K, B * T * C * sizeof(float));
-    // cudaMalloc(&d_V, L * D * sizeof(float));
+    cudaMalloc(&d_V, B * T * C * sizeof(float));
     cudaMalloc(&d_output, B * T * T * NH * sizeof(float));
+    cudaMalloc(&d_final, B * T * C * sizeof(float));
 
     // Copy data to device
     cudaMemcpy(d_Q, h_q, B * T * C * sizeof(float), cudaMemcpyHostToDevice);
     cudaMemcpy(d_K, h_k, B * T * C * sizeof(float), cudaMemcpyHostToDevice);
-    // cudaMemcpy(d_V, h_V, L * D * sizeof(float), cudaMemcpyHostToDevice);
+    cudaMemcpy(d_V, h_v, B * T * C * sizeof(float), cudaMemcpyHostToDevice);
 
     // attention_forward(d_Q, d_K, d_V, d_output, L, D);
-    scaled_batched_matmul<<<1, B * T * T * NH>>>(d_Q, d_K, d_output, B, T, C, NH, 1.0);
+    scaled_batched_matmul_transposed<<<1, B * T * T * NH>>>(d_Q, d_K, d_output, B, T, C, NH, 1.0);
+    softmax_batched<<<1, B * NH * T>>>(d_output, B, T, NH);
+    scaled_batched_matmul<<<1, B * T * C>>>(d_output, d_V, d_final, B, T, C, NH, 1.0);
 
-    cudaMemcpy(h_output, d_output, B * T * T * NH * sizeof(float), cudaMemcpyDeviceToHost);
+    cudaMemcpy(h_output1, d_output, B * T * T * NH * sizeof(float), cudaMemcpyDeviceToHost);
+    cudaMemcpy(h_output2, d_final, B * T * C * sizeof(float), cudaMemcpyDeviceToHost);
 
     std::cout << "Result matrix:" << std::endl;
     // for (int i = 0; i < L; ++i)
@@ -56,14 +74,21 @@ int main()
 
     for (int j = 0; j < B * T * T * NH; ++j)
     {
-        std::cout << h_output[j] << " ";
+        std::cout << h_output1[j] << " ";
+    }
+    std::cout << std::endl;
+
+    for (int j = 0; j < B * T * C; ++j)
+    {
+        std::cout << h_output2[j] << " ";
     }
 
     // Free device memory
-    cudaFree(d_q);
-    cudaFree(d_k);
-    // cudaFree(d_V);
+    cudaFree(d_Q);
+    cudaFree(d_K);
+    cudaFree(d_V);
     cudaFree(d_output);
-
+    cudaFree(d_final);
+    
     return 0;
 }
