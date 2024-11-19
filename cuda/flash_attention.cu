@@ -1,32 +1,36 @@
 #define B 32
-__global__ void flash_attention_kernel(const float *Q, const float *K, const float *V, float *O, unsigned int N, unsigned int d, float *l, float *m)
-{
-   int x = threadIdx.x + blockIdx.x * blockDim.x;
-   int y = threadIdx.y + blockIdx.y * blockDim.y;
-   float *Kj = K + x * B * d;
-   float *Vj = V + x * B * d;
-   float *Qi = Q + y * B * d;
-   float *Oi = O + y * B * d;
-   float *li = l + y * B;
-   float *mi = m + y * B;
 
+__global__ void flash_attention_kernel(const float *Q, const float *K, const float *V, float *O, unsigned int N, unsigned int d, float scaling_factor, float *l, float *m, int NH)
+{
+   int index = threadIdx.x;
+   int batch = blockIdx.x;
+   int head = blockIdx.y;
+   int qkv_offset = batch * NH * N * d + head * N * d;
+   int lm_offset = batch * NH * N + head * N;
+   int T = N / B;
    extern __shared__ float sram[];
    float *sram_k = sram;
    float *sram_v = sram + B * d;
    float *sram_q = sram_v + B * d;
-   float *sram_o = sram_q + B * d;
-   float *sram_l = sram_o + B * d;
-   float *sram_m = sram_l + B;
-   for (int i = 0; i < B * d; i++)
+   float *sram_s = sram_q + B * d;
+   for (int j = 0; j < T; j++)
    {
-      sram_k[i] = Kj[i];
-      sram_v[i] = Vj[i];
-      sram_q[i] = Qi[i];
-      sram_o[i] = Oi[i];
-   }
-   for (int i = 0; i < B; i++)
-   {
-      sram_l[i] = li[i];
-      sram_m[i] = mi[i];
+      // load Kj and Vj
+      for (int i = 0; i < d; i++)
+      {
+         sram_k[index * d + i] = K[qkv_offset + j * B * d + index * d + i];
+         sram_v[index * d + i] = V[qkv_offset + j * B * d + index * d + i];
+      }
+      __syncthreads();
+      for (int i = 0; i < T; i++)
+      {
+         for (int c = 0; c < d; c++)
+         {
+            sram_q[index * d + c] = Q[qkv_offset + i * B * d + index * d + c];
+         }
+         float* l_i = l + lm_offset;
+         float* m_i = m+lm_offset;
+         // for()
+      }
    }
 }
