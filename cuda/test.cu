@@ -9,11 +9,11 @@
 
 int main()
 {
-const unsigned int B = 1;  // Batch size
+    const unsigned int B = 1;  // Batch size
     const unsigned int T = 2;  // Sequence length
     const unsigned int C = 6;  // Feature dimension
     const unsigned int NH = 2; // Number of heads
-    const float factor = 1.0f / sqrt(C);
+    const float factor = 1.0f;
 
     // Hardcoded input values for Q and K
     // Shape: B x NH x T x C = 2 x 2 x 2 x 6
@@ -72,11 +72,11 @@ const unsigned int B = 1;  // Batch size
     //     std::cout << std::endl;
     // }
 
-    for (int j = 0; j < B * T * T * NH; ++j)
-    {
-        std::cout << h_output1[j] << " ";
-    }
-    std::cout << std::endl;
+    // for (int j = 0; j < B * T * T * NH; ++j)
+    // {
+    //     std::cout << h_output1[j] << " ";
+    // }
+    // std::cout << std::endl;
 
     for (int j = 0; j < B * T * C; ++j)
     {
@@ -89,6 +89,6 @@ const unsigned int B = 1;  // Batch size
     cudaFree(d_V);
     cudaFree(d_output);
     cudaFree(d_final);
-    
+
     return 0;
 }

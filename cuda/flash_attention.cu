@@ -1,14 +1,18 @@
-#define B 32
+#define Br 1
 #include <cuda.h>
+#include <stdio.h>
 
 __global__ void flash_attention_kernel(const float *Q, const float *K, const float *V, float *O, unsigned int N, unsigned int d, float scaling_factor, float *l, float *m, int NH)
 {
+   int B = Br;
    int index = threadIdx.x;
    int batch = blockIdx.x;
    int head = blockIdx.y;
+   if (index >= N)
+      return;
    int qkv_offset = batch * NH * N * d + head * N * d;
    int lm_offset = batch * NH * N + head * N;
-   int T = N / B;
+   int T = (N + B - 1) / B;
    extern __shared__ float sram[];
    float *sram_k = sram;
    float *sram_v = sram + B * d;
@@ -48,8 +52,8 @@ __global__ void flash_attention_kernel(const float *Q, const float *K, const flo
          float l_ij = 0.0f;
          for (int c = 0; c < B; c++)
          {
-            sram[index * B + c] = __expf(sram[index * B + c] - m_ij);
-            l_ij += sram[index * B + c];
+            sram_s[index * B + c] = __expf(sram_s[index * B + c] - m_ij);
+            l_ij += sram_s[index * B + c];
          }
          float m_i_new = max(m_i, m_ij);
          float l_i_new = __expf(m_i - m_i_new) * l_i + __expf(m_ij - m_i_new) * l_ij;
@@ -59,9 +63,9 @@ __global__ void flash_attention_kernel(const float *Q, const float *K, const flo
             float pv = 0.0f;
             for (int c = 0; c < B; c++) // go through elements in the row of Q
             {
-               pv += sram[index * B + c] * V[k + c * d];
+               pv += sram_s[index * B + c] * sram_v[k + c * d];
             }
-            O[qkv_offset + i * B * d + index * d +  k] = (1 / l_i_new)*(l_i * __expf(m_i - m_i_new) * O[qkv_offset + i * B * d + index * d  + k] + __expf(m_ij - m_i_new) * pv);
+            O[qkv_offset + i * B * d + index * d + k] = (1 / l_i_new) * (l_i * __expf(m_i - m_i_new) * O[qkv_offset + i * B * d + index * d + k] + __expf(m_ij - m_i_new) * pv);
          }
          l[lm_offset + B * i + index] = l_i_new;
          m[lm_offset + B * i + index] = m_i_new;
