@@ -22,3 +22,33 @@ void softmax(float *m, unsigned int R, unsigned int C) {
     }
   }
 }
+
+void softmax_batched(float *m, unsigned int B, unsigned int NH,
+                     unsigned int T) {
+
+#pragma omp parallel for collapse(3)
+  for (int i = 0; i < B; i++) {
+    for (int k = 0; k < NH; k++) {
+      for (int z = 0; z < T; z++) {
+        float *row = m + i * NH * T + k * T + z;
+
+        float max = -INFINITY;
+        for (int j = 0; j < T; j++) {
+          if (max < row[j]) {
+            max = row[j];
+          }
+        }
+
+        float denom = 0.0;
+        for (int j = 0; j < T; j++) {
+          row[j] = expf(row[j] - max);
+          denom += row[j];
+        }
+
+        for (int j = 0; j < T; j++) {
+          row[j] /= denom;
+        }
+      }
+    }
+  }
+}

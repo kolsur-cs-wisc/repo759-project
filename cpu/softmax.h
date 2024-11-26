@@ -4,4 +4,6 @@
 
 void softmax(float *m, unsigned int R, unsigned int C);
 
-#endif 
+void softmax_batched(float *m, unsigned int B, unsigned int NH, unsigned int T);
+
+#endif
