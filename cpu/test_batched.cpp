@@ -44,8 +44,8 @@ int main() {
   // attention_forward(d_Q, d_K, d_V, d_output, L, D);
   scaled_batched_matmul_transposed_cpp(h_q, h_k, h_output1, B, T, C, NH,
                                        factor);
-  //   softmax_batched(h_output1, B, NH, T);
-  scaled_matmul_batched_cpp(h_output_1, h_v, h_output2, B, T, C, NH, factor);
+  softmax_batched(h_output1, B, NH, T);
+  scaled_matmul_batched_cpp(h_output1, h_v, h_output2, B, T, C, NH, factor);
 
   std::cout << "Result matrix 1:" << std::endl;
 
