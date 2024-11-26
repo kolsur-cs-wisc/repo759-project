@@ -3,7 +3,7 @@
 #include <cmath>
 #include <cstdlib>
 #include <iostream>
-#include <omp.h>
+// #include <omp.h>
 #include <stdio.h>
 
 void softmax(float *m, unsigned int R, unsigned int C) {

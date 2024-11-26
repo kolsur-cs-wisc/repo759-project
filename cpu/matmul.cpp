@@ -1,7 +1,7 @@
 #include "matmul.h"
 #include <cstdlib>
 #include <iostream>
-#include <omp.h>
+// #include <omp.h>
 
 void scaled_matmul_cpp(const float *m1, const float *m2, float *out,
                        unsigned int r1, unsigned int c1, unsigned int c2,
@@ -54,33 +54,32 @@ void scaled_matmul_batched_cpp(const float *a, const float *v, float *out,
   }
 }
 
-void scaled_batched_matmul_transposed_cpp(const float *q, const float *k, float *out, 
-unsigned int B, unsigned int T, unsigned int C, unsigned int NH, float factor){
+void scaled_batched_matmul_transposed_cpp(const float *q, const float *k,
+                                          float *out, unsigned int B,
+                                          unsigned int T, unsigned int C,
+                                          unsigned int NH, float factor) {
   // Q: B T C (NH * CH)
   // K: B T C  (NH * CH)
-  // out: B NH T T 
+  // out: B NH T T
 
-   int CH = C/NH;
-   for(int b = 0;b < B;b++)
-   {
-      for(int nh = 0;nh<NH;nh++)
+  int CH = C / NH;
+#pragma omp parallel for collapse(3)
+  for (int b = 0; b < B; b++) {
+    for (int nh = 0; nh < NH; nh++) {
+      for (int t = 0; t < T; t++) // row
       {
-         for(int t = 0;t<T;t++) //row
-         {
-            const float *q_head = q + b * T * C + t * C + nh * CH;
-            const float *k_head = k + b * T * C +  t * C +nh * CH;
-            float *out_head = out + b * NH * T * T + nh * T * T + t * T;
-            for(int col = 0;col < T;col++) //col
-            {
-               float val = 0.0f;
-               for(int k = 0;k < T; k++)
-               {
-                  val += q_head[t + k] * k_head[k + col*T + k];
-               }
-               out_head[col] = val;
-            }
-            
-         }
-      }   
-   }
+        const float *q_head = q + b * T * C + t * C + nh * CH;
+        const float *k_head = k + b * T * C + t * C + nh * CH;
+        float *out_head = out + b * NH * T * T + nh * T * T + t * T;
+        for (int col = 0; col < T; col++) // col
+        {
+          float val = 0.0f;
+          for (int k = 0; k < T; k++) {
+            val += q_head[t + k] * k_head[k + col * T + k];
+          }
+          out_head[col] = val * factor;
+        }
+      }
+    }
+  }
 }
