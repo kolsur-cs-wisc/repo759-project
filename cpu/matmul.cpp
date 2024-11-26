@@ -1,4 +1,4 @@
-#include "matmul.h"
+#include "attention.h"
 #include <cstdlib>
 #include <iostream>
 // #include <omp.h>

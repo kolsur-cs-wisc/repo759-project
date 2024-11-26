@@ -1,6 +1,5 @@
 // #include "attention.cu"
-#include "matmul.h"
-#include "softmax.h"
+#include "attention.h"
 #include <iostream>
 
 #define L 2
@@ -41,18 +40,11 @@ int main() {
   float h_output1[B * T * T * NH];
   float h_output2[B * T * C];
 
-  // attention_forward(d_Q, d_K, d_V, d_output, L, D);
-  scaled_batched_matmul_transposed_cpp(h_q, h_k, h_output1, B, T, C, NH,
-                                       factor);
-  softmax_batched(h_output1, B, NH, T);
-  scaled_matmul_batched_cpp(h_output1, h_v, h_output2, B, T, C, NH, factor);
-
-  std::cout << "Result matrix 1:" << std::endl;
-
-  for (int j = 0; j < B * T * T * NH; ++j) {
-    std::cout << h_output1[j] << " ";
-  }
-  std::cout << std::endl;
+  attention_forward_cpp(h_q, h_k, h_v, h_output2, B, T, C, NH);
+  // scaled_batched_matmul_transposed_cpp(h_q, h_k, h_output1, B, T, C, NH,
+  //                                      factor);
+  // softmax_batched(h_output1, B, NH, T);
+  // scaled_matmul_batched_cpp(h_output1, h_v, h_output2, B, T, C, NH, factor);
 
   std::cout << "Result matrix 2:" << std::endl;
   for (int j = 0; j < B * T * C; ++j) {
