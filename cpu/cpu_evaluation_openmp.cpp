@@ -1,6 +1,7 @@
 #include "attention.h"
 #include <chrono>
 #include <iostream>
+#include <omp.h>
 #include <random>
 
 using namespace std;
@@ -38,7 +39,7 @@ int main(int argc, char *argv[]) {
   float *O = new float[B * T * C];
 
   start = high_resolution_clock::now();
-  attention(Q, K, V, O, B, T, C, NH);
+  attention_forward_cpp(Q, K, V, O, B, T, C, NH);
   end = high_resolution_clock::now();
 
   duration_milli = duration_cast<duration<double, milli>>(end - start);

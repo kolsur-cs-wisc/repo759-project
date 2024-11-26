@@ -1,7 +1,7 @@
 #include "attention.h"
 #include <cstdlib>
 #include <iostream>
-// #include <omp.h>
+#include <omp.h>
 
 void scaled_matmul_cpp(const float *m1, const float *m2, float *out,
                        unsigned int r1, unsigned int c1, unsigned int c2,

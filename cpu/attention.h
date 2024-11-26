@@ -4,8 +4,9 @@
 #include <cstddef>
 #include <vector>
 
-void attention_forward_cpp(const float* Q, const float* K, const float* V, float* output, unsigned int B, 
-            unsigned int T, unsigned int C, unsigned int NH);
+void attention_forward_cpp(const float *Q, const float *K, const float *V,
+                           float *output, unsigned int B, unsigned int T,
+                           unsigned int C, unsigned int NH);
 
 void scaled_matmul_cpp(const float *m1, const float *m2, float *out,
                        unsigned int r1, unsigned int c1, unsigned int c2,
