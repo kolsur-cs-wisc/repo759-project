@@ -36,21 +36,20 @@ void scaled_matmul_transposed_cpp(const float *m1, const float *m2, float *out,
 void scaled_matmul_batched_cpp(const float *a, const float *v, float *out,
                                unsigned int B, unsigned int T, unsigned int C,
                                unsigned int NH, float factor) {
-  int hs = C / NH;
-#pragma omp parallel for collapse(3)
-  for (int i = 0; i < B; i++) {
-    for (int j = 0; j < T; j++) {
-      for (int k = 0; k < C; k++) {
-        int index = i * T * C + j * C + k;
-        float val = 0.0f;
-        const float *a_s = a + i * NH * T * T + (k / hs) * T * T + j * T;
-        const float *v_s = v + i * T * C;
-        for (int z = 0; z < T; z++) {
-          val += a[i] * v[i * C + k];
-        }
-        out[index] = val * factor;
-      }
+#pragma omp parallel for
+  for (int index = 0; index < B * T * C; index++) {
+    int batch = index / (T * C);
+    int rem = index % (T * C);
+    int row = rem / C;
+    int col = rem % C;
+    int hs = C / NH;
+    float val = 0.0f;
+    const float *a_s = a + batch * NH * T * T + (col / hs) * T * T + row * T;
+    const float *v_s = v + batch * T * C;
+    for (int z = 0; z < T; z++) {
+      val += a_s[z] * v_s[z * C + col];
     }
+    out[index] = val * factor;
   }
 }
 
