@@ -60,25 +60,24 @@ void scaled_batched_matmul_transposed_cpp(const float *q, const float *k,
   // Q: B T C (NH * CH)
   // K: B T C  (NH * CH)
   // out: B NH T T
+#pragma omp parallel for
+  for (int index = 0; index < B * T * T * NH; index++) {
+    int batch = index / (NH * T * T);
+    int rem1 = index % (NH * T * T);
+    int head = rem1 / (T * T);
+    int rem2 = rem1 % (T * T);
+    int row = rem2 / T;
+    int col = rem2 % T;
+    int hs = C / NH;
+    float val = 0.0;
 
-  int CH = C / NH;
-#pragma omp parallel for collapse(3)
-  for (int b = 0; b < B; b++) {
-    for (int nh = 0; nh < NH; nh++) {
-      for (int t = 0; t < T; t++) // row
-      {
-        const float *q_head = q + b * T * C + t * C + nh * CH;
-        const float *k_head = k + b * T * C + t * C + nh * CH;
-        float *out_head = out + b * NH * T * T + nh * T * T + t * T;
-        for (int col = 0; col < T; col++) // col
-        {
-          float val = 0.0f;
-          for (int k = 0; k < T; k++) {
-            val += q_head[t + k] * k_head[k + col * T + k];
-          }
-          out_head[col] = val * factor;
-        }
-      }
+    const float *q_start = q + batch * T * C + head * hs + row * NH * hs;
+    const float *k_start = k + batch * T * C + head * hs + col * NH * hs;
+
+    for (int c = 0; c < hs; c++) {
+      val += q_start[c] * k_start[c];
     }
+
+    out[index] = val * factor;
   }
 }
