@@ -1,7 +1,7 @@
-#include <cstdlib>
-#include <iostream>
 #include "matmul.h"
 #include "softmax.h"
+#include <cstdlib>
+#include <iostream>
 
 #define L 2
 #define D 3
