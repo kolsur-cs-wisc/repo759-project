@@ -12,5 +12,5 @@ void attention_forward_cpp(const float *Q, const float *K, const float *V,
   scaled_batched_matmul_transposed_cpp(Q, K, attention_scores, B, T, C, NH,
                                        factor);
   softmax_batched(attention_scores, B, NH, T);
-  scaled_matmul_batched_cpp(attention_scores, V, output, B, T, C, NH, factor);
+  scaled_matmul_batched_cpp(attention_scores, V, output, B, T, C, NH, 1.0);
 }

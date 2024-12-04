@@ -53,16 +53,18 @@ int main() {
   cudaMemcpy(d_K, h_k, B * T * C * sizeof(float), cudaMemcpyHostToDevice);
   cudaMemcpy(d_V, h_v, B * T * C * sizeof(float), cudaMemcpyHostToDevice);
 
-  // attention_forward(d_Q, d_K, d_V, d_output, L, D);
-  scaled_batched_matmul_transposed<<<1, B * T * T * NH>>>(d_Q, d_K, d_output, B,
-                                                          T, C, NH, 1.0);
-  softmax_batched<<<1, B * NH * T>>>(d_output, B, T, NH);
-  scaled_batched_matmul<<<1, B * T * C>>>(d_output, d_V, d_final, B, T, C, NH,
-                                          1.0);
+  attention_forward_batched(d_Q, d_K, d_V, d_output, B, T, C, NH);
+  // scaled_batched_matmul_transposed<<<1, B * T * T * NH>>>(d_Q, d_K, d_output,
+  // B,
+  //                                                         T, C, NH, 1.0);
+  // softmax_batched<<<1, B * NH * T>>>(d_output, B, T, NH);
+  // scaled_batched_matmul<<<1, B * T * C>>>(d_output, d_V, d_final, B, T, C,
+  // NH,
+  //                                         1.0);
 
-  cudaMemcpy(h_output1, d_output, B * T * T * NH * sizeof(float),
-             cudaMemcpyDeviceToHost);
-  cudaMemcpy(h_output2, d_final, B * T * C * sizeof(float),
+  // cudaMemcpy(h_output2, d_output, B * T * T * NH * sizeof(float),
+  //            cudaMemcpyDeviceToHost);
+  cudaMemcpy(h_output2, d_output, B * T * C * sizeof(float),
              cudaMemcpyDeviceToHost);
 
   std::cout << "Result matrix:" << std::endl;
