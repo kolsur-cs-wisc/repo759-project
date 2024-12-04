@@ -34,7 +34,7 @@ int main(int argc, char *argv[])
    float *O = new float[B * T * C_per_H * NH];
    const float factor = 1.0f;
 
-   float time = flash_attention(Q, K, V, O, B, T, C, NH, factor);
+   float time = flash_attention(Q, K, V, O, B, T, C_per_H, NH, factor);
 
    std::cout << "Time for kernel call " << time << "ms" << std::endl;
    std::cout << "Result matrix:" << std::endl;
