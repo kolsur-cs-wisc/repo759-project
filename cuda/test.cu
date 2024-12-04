@@ -1,6 +1,6 @@
-// #include "attention.cu"
-#include "matmul.cuh"
-#include "softmax.cu"
+#include "attention.cu"
+// #include "matmul.cuh"
+// #include "softmax.cu"
 #include <cuda.h>
 #include <iostream>
 
@@ -53,7 +53,7 @@ int main() {
   cudaMemcpy(d_K, h_k, B * T * C * sizeof(float), cudaMemcpyHostToDevice);
   cudaMemcpy(d_V, h_v, B * T * C * sizeof(float), cudaMemcpyHostToDevice);
 
-  attention_forward_batched(d_Q, d_K, d_V, d_output, B, T, C, NH);
+  attention_forward_batched(d_Q, d_K, d_V, d_final, B, T, C, NH);
   // scaled_batched_matmul_transposed<<<1, B * T * T * NH>>>(d_Q, d_K, d_output,
   // B,
   //                                                         T, C, NH, 1.0);
@@ -64,7 +64,7 @@ int main() {
 
   // cudaMemcpy(h_output2, d_output, B * T * T * NH * sizeof(float),
   //            cudaMemcpyDeviceToHost);
-  cudaMemcpy(h_output2, d_output, B * T * C * sizeof(float),
+  cudaMemcpy(h_output2, d_final, B * T * C * sizeof(float),
              cudaMemcpyDeviceToHost);
 
   std::cout << "Result matrix:" << std::endl;
