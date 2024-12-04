@@ -32,7 +32,7 @@ int main(int argc, char *argv[]) {
   float *O = new float[B * T * C_per_H * NH];
   const float factor = 1.0f;
 
-  float *d_Q, d_K, d_V, d_O;
+  float *d_Q, *d_K, *d_V, *d_O;
   cudaMalloc(&d_Q, B * T * C * sizeof(float));
   cudaMalloc(&d_K, B * T * C * sizeof(float));
   cudaMalloc(&d_V, B * T * C * sizeof(float));
@@ -42,7 +42,7 @@ int main(int argc, char *argv[]) {
   cudaMemcpy(d_K, K, B * T * C * sizeof(float), cudaMemcpyHostToDevice);
   cudaMemcpy(d_V, V, B * T * C * sizeof(float), cudaMemcpyHostToDevice);
 
-  float time attention_forward_batched(d_Q, d_K, d_V, d_O, B, T, C, NH);
+  float time = attention_forward_batched(d_Q, d_K, d_V, d_O, B, T, C, NH);
 
   std::cout << "Time for kernel call " << time << "ms" << std::endl;
   std::cout << "Result matrix:" << std::endl;

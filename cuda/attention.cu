@@ -58,10 +58,10 @@ float attention_forward_batched(const float *Q, const float *K, const float *V,
   cudaEventCreate(&stop);
 
   cudaEventRecord(start, 0);
-  scaled_batched_matmul_transposed<<<num_blocks_1, B * T * T * NH>>>(
+  scaled_batched_matmul_transposed<<<num_blocks_1, threads_per_block>>>(
       Q, K, attention_scores, B, T, C, NH, factor);
 
-  softmax_batched<<<num_blocks_2, B * NH * T>>>(attention_scores, B, T, NH);
+  softmax_batched<<<num_blocks_2, threads_per_block>>>(attention_scores, B, T, NH);
 
   scaled_batched_matmul<<<num_blocks_3, threads_per_block>>>(
       attention_scores, V, output, B, T, C, NH, 1.0);
