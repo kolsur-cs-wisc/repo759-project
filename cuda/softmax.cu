@@ -1,4 +1,5 @@
 #include <math.h>
+#include "attention.cuh"
 
 __global__ void softmax(float *m, unsigned int R, unsigned int C) {
   int i = blockIdx.x * blockDim.x + threadIdx.x;

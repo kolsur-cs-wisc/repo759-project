@@ -1,5 +1,5 @@
-#include "matmul.cuh"
-#include "softmax.cu"
+#include "attention.cuh"
+#include <cuda.h>
 
 void attention_forward(const float *Q, const float *K, const float *V,
                        float *output, const int L, const int D) {
@@ -48,4 +48,5 @@ void attention_forward_batched(const float *Q, const float *K, const float *V,
       ((total_elements_output + threads_per_block - 1) / threads_per_block);
   scaled_batched_matmul<<<num_blocks_3, threads_per_block>>>(
       attention_scores, V, output, B, T, C, NH, 1.0);
+
 }

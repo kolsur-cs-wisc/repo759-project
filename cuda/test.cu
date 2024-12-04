@@ -1,13 +1,12 @@
-#include "attention.cu"
-// #include "matmul.cuh"
-// #include "softmax.cu"
+#include "attention.cuh"
 #include <cuda.h>
 #include <iostream>
 
 #define L 2
 #define D 2
 
-int main() {
+int main()
+{
   const unsigned int B = 1;  // Batch size
   const unsigned int T = 2;  // Sequence length
   const unsigned int C = 6;  // Feature dimension
@@ -83,7 +82,8 @@ int main() {
   // }
   // std::cout << std::endl;
 
-  for (int j = 0; j < B * T * C; ++j) {
+  for (int j = 0; j < B * T * C; ++j)
+  {
     std::cout << h_output2[j] << " ";
   }
 
