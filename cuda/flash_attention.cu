@@ -1,6 +1,5 @@
-#define Br 1
+#define Br 32
 #include <cuda.h>
-#include <stdio.h>
 
 __global__ void flash_attention_kernel(const float *Q, const float *K,
 													const float *V, float *O, unsigned int N,
@@ -76,9 +75,9 @@ __global__ void flash_attention_kernel(const float *Q, const float *K,
 					pv += sram_s[index * B + c] * sram_v[k + c * d];
 				}
 				O[qkv_offset + i * B * d + index * d + k] =
-					 (1 / l_i_new) * (l_i * __expf(m_i - m_i_new) *
-												 O[qkv_offset + i * B * d + index * d + k] +
-											__expf(m_ij - m_i_new) * pv);
+					 (1 / l_i_new) * ((l_i * __expf(m_i - m_i_new) *
+												 O[qkv_offset + i * B * d + index * d + k]) +
+											(__expf(m_ij - m_i_new) * pv));
 			}
 			l[lm_offset + B * i + index] = l_i_new;
 			m[lm_offset + B * i + index] = m_i_new;
@@ -166,10 +165,12 @@ float flash_attention(const float *h_q_nonpermuted, const float *h_k_nonpermuted
 	permuteTensor(h_k_nonpermuted, h_k, B, T, C, NH);
 	permuteTensor(h_v_nonpermuted, h_v, B, T, C, NH);
 
-	float h_output_flash[B * NH * T * C];
+	float *h_output_flash = new float[B * NH * T * C];
+	float *h_m = new float[B * NH * T];
 
-	float h_m[] = {-INFINITY, -INFINITY, -INFINITY, -INFINITY};
-
+	for (int i = 0; i < B * NH * T; i++){
+		h_m[i] = -INFINITY;
+	}
 	// Device matrices
 	float *d_Q, *d_K, *d_V, *d_flash, *d_l, *d_m;
 	cudaMalloc(&d_Q, B * NH * T * C * sizeof(float));
@@ -178,6 +179,8 @@ float flash_attention(const float *h_q_nonpermuted, const float *h_k_nonpermuted
 	cudaMalloc(&d_flash, B * NH * T * C * sizeof(float));
 	cudaMalloc(&d_l, B * NH * T * sizeof(float));
 	cudaMalloc(&d_m, B * NH * T * sizeof(float));
+
+	cudaMemset(d_l, 0, B * NH * T * sizeof(float));
 
 	// Copy data to device
 	cudaMemcpy(d_Q, h_q, B * NH * T * C * sizeof(float), cudaMemcpyHostToDevice);
