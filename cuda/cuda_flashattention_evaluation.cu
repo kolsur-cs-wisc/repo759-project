@@ -32,17 +32,11 @@ int main(int argc, char *argv[])
    }
    int C_per_H = C/NH;
    float *O = new float[B * T * C_per_H * NH];
-   const float factor = 1.0f;
+   const float factor = 1 / std::sqrt(C_per_H);
 
    float time = flash_attention(Q, K, V, O, B, T, C_per_H, NH, factor);
 
    std::cout << "Time for kernel call " << time << "ms" << std::endl;
-   std::cout << "Result matrix:" << std::endl;
-
-   for (int j = 0; j < B * T * C; ++j)
-   {
-      std::cout << O[j] << " ";
-   }
 
    std::cout << std::endl;
    delete[] Q;
