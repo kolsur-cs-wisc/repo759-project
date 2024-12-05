@@ -3,7 +3,7 @@
 #SBATCH --partition=instruction
 #SBATCH --job-name=serialcpu
 #SBATCH --output=serial.out
-#SBATCH --time 00:55:00
+#SBATCH --time 00:30:00
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=1
 
