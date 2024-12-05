@@ -8,6 +8,9 @@
 #SBATCH --cpus-per-task=1
 #SBATCH --gpus-per-task=1
 
+module load gcc/12.2.0
+module load nvidia/cuda/12.2.0
+
 cd $SLURM_SUBMIT_DIR
 nvcc cuda_flashattention_evaluation.cu -Xcompiler -O3 -Xcompiler -Wall -Xptxas -O3 -std c++17 -o flash
 
