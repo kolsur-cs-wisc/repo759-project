@@ -43,7 +43,7 @@ int main(int argc, char *argv[]) {
 
   float time = attention_forward_batched(d_Q, d_K, d_V, d_O, B, T, C, NH);
 
-  std::cout << "Time for kernel call " << time << "ms" << std::endl;
+  std::cout << time << std::endl;
 
   delete[] Q;
   delete[] K;

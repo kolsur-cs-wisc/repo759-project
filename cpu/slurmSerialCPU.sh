@@ -13,7 +13,7 @@ g++ cpu_evaluation.cpp attention.cpp matmul.cpp softmax.cpp -Wall -O3 -std=c++17
 for i in {1..10};
 do
     n=$((2**$i))
-    echo "2^$i $n"
-    ./serial 128 $n 512 8
+    echo "$n"
+    ./serial 64 $n 512 8
 done
 echo "Serial CPU Finished"

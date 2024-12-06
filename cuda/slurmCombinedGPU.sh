@@ -18,8 +18,8 @@ nvcc cuda_attention_evaluation.cu matmul.cu softmax.cu attention.cu -Xcompiler -
 for i in {1..11};
 do
     n=$((2**$i))
-    echo "2^$i $n"
-    ncu -o "attn_$n" ./attn 64 $n 512 8
+    echo "$n"
+    ./attn 64 $n 512 8
 done
 echo "Attn GPU Finished"
 
@@ -28,7 +28,7 @@ nvcc cuda_flashattention_evaluation.cu -Xcompiler -O3 -Xcompiler -Wall -Xptxas -
 for i in {1..11};
 do
     n=$((2**$i))
-    echo "2^$i $n"
-    ncu -o "flash_$n" ./flash 64 $n 512 8
+    echo "$n"
+    ./flash 64 $n 512 8
 done
 echo "Flash GPU Finished"
