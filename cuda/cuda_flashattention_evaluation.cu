@@ -35,8 +35,7 @@ int main(int argc, char *argv[]) {
   float time = flash_attention(Q, K, V, O, B, T, C_per_H, NH, factor);
 
   std::cout << time << std::endl;
-
-  std::cout << std::endl;
+  
   delete[] Q;
   delete[] K;
   delete[] V;
